@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ôn Tập Truyền Nhiệt - Flashcards</title>
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --primary-light: #818CF8;
+            --secondary: #10B981;
+            --danger: #EF4444;
+            --dark: #1F2937;
+            --light: #F3F4F6;
+            --white: #FFFFFF;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            min-height: 100vh;
+            color: var(--dark);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        p.subtitle {
+            color: #6B7280;
+            font-size: 1.1rem;
+        }
+
+        .flashcard-container {
+            width: 100%;
+            max-width: 800px;
+            perspective: 1000px;
+            animation: fadeIn 1s ease 0.3s both;
+        }
+
+        .card {
+            background: var(--white);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            padding: 2.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+
+        .progress {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            color: #9CA3AF;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .question-text {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            line-height: 1.5;
+            color: var(--dark);
+        }
+
+        .options {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .option {
+            background: var(--light);
+            border: 2px solid transparent;
+            padding: 1.2rem;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+        }
+
+        .option:hover {
+            background: #E0E7FF;
+            border-color: var(--primary-light);
+            transform: translateX(5px);
+        }
+
+        .option.correct {
+            background: #D1FAE5;
+            border-color: var(--secondary);
+            color: #065F46;
+        }
+
+        .option.wrong {
+            background: #FEE2E2;
+            border-color: var(--danger);
+            color: #991B1B;
+        }
+
+        .option-letter {
+            background: var(--white);
+            color: var(--primary);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            margin-right: 1rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            flex-shrink: 0;
+        }
+
+        .feedback-panel {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            border-radius: 12px;
+            background: #F8FAFC;
+            border-left: 5px solid var(--primary);
+            display: none;
+            animation: slideUp 0.5s ease;
+        }
+
+        .feedback-panel.show {
+            display: block;
+        }
+
+        .feedback-title {
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .feedback-text {
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .source-tag {
+            display: inline-block;
+            background: #E2E8F0;
+            color: #475569;
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            width: fit-content;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+        }
+
+        button {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-prev {
+            background: var(--light);
+            color: var(--dark);
+        }
+
+        .btn-prev:hover {
+            background: #E5E7EB;
+        }
+
+        .btn-next {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .btn-next:hover {
+            background: #4338CA;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+
+        .btn-next:disabled {
+            background: #9CA3AF;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        @media (max-width: 600px) {
+            h1 { font-size: 1.8rem; }
+            .card { padding: 1.5rem; }
+            .question-text { font-size: 1.2rem; }
+            .option { font-size: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Truyền Nhiệt Học</h1>
+        <p class="subtitle">Ôn tập trắc nghiệm - Giữa kỳ 20252</p>
+    </header>
+
+    <div class="flashcard-container">
+        <div class="card" id="flashcard">
+            <div class="progress">
+                <span id="question-counter">Câu 1 / 10</span>
+                <span id="score-counter">Điểm: 0</span>
+            </div>
+            
+            <div class="question-text" id="question-text">
+                Đang tải câu hỏi...
+            </div>
+
+            <div class="options" id="options-container">
+                <!-- Options injected by JS -->
+            </div>
+
+            <div class="feedback-panel" id="feedback-panel">
+                <div class="feedback-title" id="feedback-title">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                    Giải thích
+                </div>
+                <div class="feedback-text" id="feedback-text"></div>
+                <div class="source-tag">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                    <span id="source-text">Trích từ: Mở đầu - Trang X</span>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button class="btn-prev" id="btn-prev" onclick="prevQuestion()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                    Câu trước
+                </button>
+                <button class="btn-next" id="btn-next" onclick="nextQuestion()" disabled>
+                    Câu tiếp theo
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                question: "Năng lượng vĩ mô và vi mô khác nhau như thế nào?",
+                options: [
+                    "Vĩ mô liên quan đến hệ quy chiếu bên ngoài, vi mô liên quan đến cấu trúc phân tử bên trong.",
+                    "Vĩ mô là năng lượng của các hạt cơ bản, vi mô là năng lượng của toàn bộ hệ thống.",
+                    "Vĩ mô luôn lớn hơn vi mô về mặt giá trị tuyệt đối.",
+                    "Vĩ mô là động năng, vi mô là thế năng."
+                ],
+                correct: 0,
+                explanation: "Năng lượng vĩ mô là những dạng năng lượng mà một hệ thống có được khi căn cứ vào một hệ quy chiếu bên ngoài nào đó. Năng lượng vi mô là các dạng năng lượng liên quan đến cấu trúc phân tử của một hệ và mức độ hoạt động của phân tử, độc lập với hệ quy chiếu bên ngoài.",
+                source: "Mở đầu - Trang 8"
+            },
+            {
+                question: "Nội năng của một hệ thống bao gồm những dạng năng lượng nào?",
+                options: [
+                    "Chỉ bao gồm động năng của các phân tử.",
+                    "Tổng của động năng và thế năng của các phân tử cấu tạo vật/hệ.",
+                    "Nhiệt lượng tỏa ra và công thực hiện của hệ thống.",
+                    "Năng lượng chuyển pha và bức xạ nhiệt."
+                ],
+                correct: 1,
+                explanation: "Nội năng (U) là tổng của động năng và thế năng của các phân tử cấu tạo vật/hệ. Phần thế năng bao gồm năng lượng tiềm ẩn (latent heat), năng lượng hóa học, năng lượng hạt nhân. Phần động năng gọi là năng lượng có thể cảm nhận (sensible energy).",
+                source: "Mở đầu - Trang 9"
+            },
+            {
+                question: "Sự khác biệt giữa nhiệt dung riêng và nhiệt chuyển pha là gì?",
+                options: [
+                    "Nhiệt dung riêng đo sự thay đổi thể tích, nhiệt chuyển pha đo sự thay đổi áp suất.",
+                    "Nhiệt dung riêng liên quan đến chất khí, nhiệt chuyển pha liên quan đến chất lỏng.",
+                    "Nhiệt dung riêng để nâng nhiệt độ lên 1 độ, nhiệt chuyển pha để thay đổi trạng thái (pha) của chất.",
+                    "Cả hai đều chỉ lượng nhiệt cần thiết để hóa hơi một chất lỏng."
+                ],
+                correct: 2,
+                explanation: "Nhiệt dung riêng là năng lượng cần cấp để nâng nhiệt độ của 1 đơn vị khối lượng lên 1 độ (kJ/kg.°C). Nhiệt chuyển pha là năng lượng cần thiết để một đơn vị khối lượng của chất hoàn toàn chuyển sang pha khác (ví dụ từ lỏng sang khí).",
+                source: "Mở đầu - Trang 14, 15"
+            },
+            {
+                question: "Điều kiện tiên quyết để quá trình truyền nhiệt xảy ra là gì?",
+                options: [
+                    "Hai vật phải tiếp xúc trực tiếp với nhau.",
+                    "Phải có sự chuyển động của lưu chất.",
+                    "Phải có sự khác biệt về nhiệt độ giữa hai vật thể hoặc hệ thống.",
+                    "Cả hai vật phải là chất rắn."
+                ],
+                correct: 2,
+                explanation: "Nguyên tắc để xảy ra quá trình truyền nhiệt là phải có sự khác biệt về nhiệt độ. Không thể có sự truyền nhiệt giữa hai vật thể có nhiệt độ bằng nhau.",
+                source: "Mở đầu - Trang 11"
+            },
+            {
+                question: "Đơn vị của tổng lượng nhiệt, tốc độ truyền nhiệt và thông lượng nhiệt lần lượt là:",
+                options: [
+                    "W, J/s, W/m²",
+                    "J, W, W/m²",
+                    "J/kg, W, J/m²",
+                    "W/m², J, W"
+                ],
+                correct: 1,
+                explanation: "Tổng lượng nhiệt (Q) có đơn vị là J (Jun). Tốc độ truyền nhiệt (Q dot) là nhiệt lượng truyền trong 1 đơn vị thời gian, đơn vị J/s hay W (Watt). Thông lượng nhiệt (q) là tốc độ truyền nhiệt qua 1 đơn vị diện tích, đơn vị W/m².",
+                source: "Mở đầu - Trang 10"
+            },
+            {
+                question: "Trong chất lỏng và chất khí, cơ chế dẫn nhiệt xảy ra do đâu?",
+                options: [
+                    "Do sự dao động của các phân tử trong mạng tinh thể.",
+                    "Do sự vận chuyển năng lượng của các electron tự do.",
+                    "Do sóng điện từ phát ra từ các hạt.",
+                    "Do sự va chạm và khuếch tán của các phân tử khi chuyển động ngẫu nhiên."
+                ],
+                correct: 3,
+                explanation: "Dẫn nhiệt trong chất lỏng và khí chủ yếu do sự va chạm và khuếch tán của các phân tử khi chuyển động ngẫu nhiên. Trong chất rắn mới do dao động mạng tinh thể và electron tự do.",
+                source: "Mở đầu - Trang 19"
+            },
+            {
+                question: "Độ dẫn nhiệt k = 401 W/m.K của đồng có ý nghĩa gì?",
+                options: [
+                    "Đồng cần 401 W để làm nóng chảy 1 kg khối lượng.",
+                    "Có 401 Jun nhiệt lượng truyền qua 1m² bề mặt đồng dày 1m trong 1 giây khi chênh lệch nhiệt độ là 1 độ.",
+                    "Tốc độ truyền nhiệt tối đa của đồng là 401 W.",
+                    "Nhiệt dung riêng của đồng là 401 W/m.K."
+                ],
+                correct: 1,
+                explanation: "Độ dẫn nhiệt k là lượng nhiệt (Jun) truyền qua 1m² bề mặt vật liệu trong 1s khi chênh lệch nhiệt độ trên 1m chiều dài là 1 độ. Đồng có k = 401 W/m.K nghĩa là khả năng dẫn nhiệt của đồng rất tốt.",
+                source: "Chương 1 - Trang 5"
+            },
+            {
+                question: "Trong tính toán nhiệt trở của một bức tường một lớp, công thức tính nhiệt trở dẫn nhiệt (R_wall) là gì?",
+                options: [
+                    "R = k / (A * L)",
+                    "R = L / (k * A)",
+                    "R = A / (k * L)",
+                    "R = k * A * L"
+                ],
+                correct: 1,
+                explanation: "Nhiệt trở dẫn nhiệt qua tường phẳng được tính bằng công thức: R_wall = L / (k * A). Trong đó L là độ dày, k là độ dẫn nhiệt, và A là diện tích.",
+                source: "Chương 1 - Trang 12"
+            },
+            {
+                question: "Thế nào là truyền nhiệt đối lưu cưỡng bức?",
+                options: [
+                    "Sự chuyển dịch của chất lỏng do sự chênh lệch khối lượng riêng.",
+                    "Sự truyền nhiệt hoàn toàn là dẫn nhiệt mà không có chuyển động.",
+                    "Sự chuyển dịch của chất lỏng là do nhân tạo (bơm, quạt, máy nén... cưỡng bức chất lỏng chảy qua bề mặt).",
+                    "Sự truyền nhiệt dưới dạng sóng điện từ."
+                ],
+                correct: 2,
+                explanation: "Truyền nhiệt đối lưu cưỡng bức là sự chuyển dịch của chất lỏng do nhân tạo tạo ra (sử dụng bơm, quạt, gió...). Khác với đối lưu tự nhiên xảy ra do chênh lệch khối lượng riêng (do chênh lệch nhiệt độ).",
+                source: "Mở đầu - Trang 25"
+            },
+            {
+                question: "Ý nghĩa của chuẩn số Nusselt (Nu) trong đối lưu nhiệt là gì?",
+                options: [
+                    "Đặc trưng cho tỷ lệ giữa lực quán tính và lực nhớt của lưu chất.",
+                    "Đặc trưng cho độ dày lớp biên vận tốc và lớp biên nhiệt.",
+                    "Đặc trưng cho sự gia tăng tốc độ trao đổi nhiệt qua lớp chất lỏng nhờ quá trình đối lưu so với trường hợp chỉ có dẫn nhiệt.",
+                    "Đo lường năng lượng bức xạ của một bề mặt."
+                ],
+                correct: 2,
+                explanation: "Chuẩn số Nusselt (Nu = h*Lc / k) đặc trưng cho sự gia tăng tốc độ trao đổi nhiệt do đối lưu so với dẫn nhiệt thuần túy (khi Nu=1). Nu càng lớn, truyền nhiệt đối lưu càng hiệu quả.",
+                source: "Chương 1 - Trang 31"
+            },
+            {
+                question: "Chuẩn số Reynolds (Re) dùng để làm gì trong thủy động lực học và truyền nhiệt?",
+                options: [
+                    "Cho biết chế độ chuyển động của dòng chất lỏng (chảy tầng hay chảy rối).",
+                    "Đo lường sự khuếch tán nhiệt so với động lượng.",
+                    "Tính toán trực tiếp hệ số trao đổi nhiệt bức xạ.",
+                    "Xác định độ dày của bức tường cách nhiệt."
+                ],
+                correct: 0,
+                explanation: "Chuẩn số Re cho biết chế độ chuyển động của dòng chất lỏng. Khi Re nhỏ, lực nhớt khống chế lực quán tính, dòng chảy tầng. Khi Re lớn, lực quán tính chiếm ưu thế, dòng chảy rối.",
+                source: "Chương 1 - Trang 33"
+            },
+            {
+                question: "Các sóng điện từ là bức xạ nhiệt nằm trong khoảng bước sóng nào?",
+                options: [
+                    "0.1 đến 100 μm",
+                    "100 đến 1000 μm",
+                    "0.01 đến 0.1 μm",
+                    "Dưới 10^-9 μm"
+                ],
+                correct: 0,
+                explanation: "Bức xạ nhiệt có bước sóng trong khoảng từ 0.1 đến 100 μm. Bao gồm ánh sáng (trông thấy), bức xạ hồng ngoại, và một phần bức xạ UV.",
+                source: "Chương 1 - Trang 80"
+            },
+            {
+                question: "Định luật Stefan-Boltzmann mô tả điều gì?",
+                options: [
+                    "Sự truyền nhiệt do dẫn nhiệt tỷ lệ thuận với gradient nhiệt độ.",
+                    "Tốc độ tối đa của bức xạ phát ra từ bề mặt vật đen tỷ lệ với lũy thừa bậc 4 của nhiệt độ tuyệt đối (q = σ.As.T^4).",
+                    "Năng lượng nhiệt đối lưu tỷ lệ với hệ số cấp nhiệt h.",
+                    "Hệ số phát xạ của vật đen luôn bằng hệ số hấp thụ."
+                ],
+                correct: 1,
+                explanation: "Định luật Stefan-Boltzmann cho biết tốc độ tối đa của bức xạ phát ra từ bề mặt vật đen tuyệt đối là q = σ.As.Ts^4 (W), với σ là hằng số Stefan-Boltzmann.",
+                source: "Mở đầu - Trang 29 / Chương 1 - Trang 87"
+            },
+            {
+                question: "Hệ số góc quan sát (View Factor) F_i→j được định nghĩa là gì?",
+                options: [
+                    "Góc nghiêng của bề mặt so với mặt đất.",
+                    "Hệ số phản xạ của vật thể mờ đục.",
+                    "Phần bức xạ phát ra từ bề mặt i đi trực tiếp tới bề mặt j.",
+                    "Góc mở của chùm tia bức xạ khi rời khỏi bề mặt."
+                ],
+                correct: 2,
+                explanation: "Thông số view factor F_i→j (từ bề mặt i đến bề mặt j) là phần bức xạ phát ra từ bề mặt i đến trực tiếp tới bề mặt j, phụ thuộc vào hình học và khoảng cách giữa 2 bề mặt.",
+                source: "Chương 1 - Trang 96"
+            },
+            {
+                question: "Môi trường như thế nào được coi là trong suốt với bức xạ nhiệt?",
+                options: [
+                    "Các khí phức tạp như hơi nước, CO2.",
+                    "Chất lỏng và chất rắn mờ đục.",
+                    "Các khí đơn nguyên tử hoặc phân tử 2 nguyên tử đối xứng như H2, O2, N2.",
+                    "Môi trường có nhiều hơi hữu cơ."
+                ],
+                correct: 2,
+                explanation: "Các khí đơn nguyên tử hoặc phân tử 2 nguyên tử đối xứng như H2, O2, He, Ar, N2 hầu như trong suốt với bức xạ (không hấp thụ hay phát xạ đáng kể). Ngược lại, hơi nước, CO2, hơi hữu cơ hấp thụ bức xạ khá mạnh.",
+                source: "Chương 1 - Trang 111"
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let hasAnswered = false;
+
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const feedbackPanel = document.getElementById('feedback-panel');
+        const feedbackText = document.getElementById('feedback-text');
+        const sourceText = document.getElementById('source-text');
+        const btnNext = document.getElementById('btn-next');
+        const btnPrev = document.getElementById('btn-prev');
+        const questionCounter = document.getElementById('question-counter');
+        const scoreCounter = document.getElementById('score-counter');
+
+        function loadQuestion(index) {
+            hasAnswered = false;
+            const q = questions[index];
+            questionText.textContent = q.question;
+            questionCounter.textContent = `Câu ${index + 1} / ${questions.length}`;
+            
+            optionsContainer.innerHTML = '';
+            feedbackPanel.classList.remove('show');
+            btnNext.disabled = true;
+
+            const letters = ['A', 'B', 'C', 'D'];
+
+            q.options.forEach((option, i) => {
+                const optDiv = document.createElement('div');
+                optDiv.className = 'option';
+                optDiv.innerHTML = `
+                    <div class="option-letter">${letters[i]}</div>
+                    <div class="option-text">${option}</div>
+                `;
+                optDiv.onclick = () => selectOption(i, optDiv);
+                optionsContainer.appendChild(optDiv);
+            });
+
+            btnPrev.style.visibility = index === 0 ? 'hidden' : 'visible';
+            
+            if (index === questions.length - 1) {
+                btnNext.innerHTML = `Hoàn thành <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+            } else {
+                btnNext.innerHTML = `Câu tiếp theo <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>`;
+            }
+        }
+
+        function selectOption(selectedIndex, element) {
+            if (hasAnswered) return;
+            hasAnswered = true;
+
+            const q = questions[currentQuestion];
+            const options = optionsContainer.children;
+
+            if (selectedIndex === q.correct) {
+                element.classList.add('correct');
+                score++;
+                scoreCounter.textContent = `Điểm: ${score}`;
+            } else {
+                element.classList.add('wrong');
+                options[q.correct].classList.add('correct');
+            }
+
+            // Disable all options
+            for (let opt of options) {
+                opt.style.cursor = 'default';
+                opt.onclick = null;
+            }
+
+            // Show feedback
+            feedbackText.textContent = q.explanation;
+            sourceText.textContent = `Trích từ: ${q.source}`;
+            feedbackPanel.classList.add('show');
+            
+            btnNext.disabled = false;
+        }
+
+        function nextQuestion() {
+            if (currentQuestion < questions.length - 1) {
+                currentQuestion++;
+                loadQuestion(currentQuestion);
+            } else {
+                showResults();
+            }
+        }
+
+        function prevQuestion() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                loadQuestion(currentQuestion);
+            }
+        }
+
+        function showResults() {
+            questionText.textContent = `Hoàn thành ôn tập! Điểm của bạn: ${score}/${questions.length}`;
+            optionsContainer.innerHTML = `
+                <div style="text-align: center; padding: 2rem;">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--secondary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 1rem;"><circle cx="12" cy="12" r="10"></circle><polyline points="16 12 12 8 8 12"></polyline><line x1="12" y1="16" x2="12" y2="8"></line></svg>
+                    <h2 style="color: var(--dark); margin-bottom: 1rem;">Chúc mừng bạn đã hoàn thành bài ôn tập!</h2>
+                    <p style="color: #6B7280; margin-bottom: 2rem;">Hãy xem lại các câu trả lời sai để nắm vững kiến thức hơn.</p>
+                    <button class="btn-next" onclick="resetQuiz()" style="margin: 0 auto;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+                        Làm lại từ đầu
+                    </button>
+                </div>
+            `;
+            feedbackPanel.classList.remove('show');
+            document.querySelector('.controls').style.display = 'none';
+        }
+
+        function resetQuiz() {
+            currentQuestion = 0;
+            score = 0;
+            scoreCounter.textContent = `Điểm: 0`;
+            document.querySelector('.controls').style.display = 'flex';
+            loadQuestion(0);
+        }
+
+        // Initialize first question
+        loadQuestion(0);
+    </script>
+</body>
+</html>
